@@ -11,6 +11,7 @@
         "role": "assistant",
         "content": [
           { "type": "text", "text": "{{caption}}" },
+          { "type": "text", "text": "{{keywords}}" },
           { "type": "image", "image": "{{image_path}}" }
         ]
       }
