@@ -1,1 +1,30 @@
-llm_prompt = {}
+{
+  "training": {
+    "template": [
+      {
+        "role": "user",
+        "content": [
+          { "type": "text", "text": "{{instruction}}" }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          { "type": "text", "text": "{{caption}}" },
+          { "type": "image", "image": "{{image_path}}" }
+        ]
+      }
+    ]
+  },
+  "inference": {
+    "template": [
+      {
+        "role": "user",
+        "content": [
+          { "type": "text", "text": "{{instruction}}" },
+          { "type": "image" }
+        ]
+      }
+    ]
+  }
+}
