@@ -11,8 +11,7 @@
         "role": "assistant",
         "content": [
           { "type": "text", "text": "{{caption}}" },
-          { "type": "text", "text": "{{keywords}}" },
-          { "type": "image", "image": "{{image_path}}" }
+          { "type": "function", "name": "search_engine", "**args": { "query": "{{instruction}}" } }
         ]
       }
     ]
@@ -23,7 +22,8 @@
         "role": "user",
         "content": [
           { "type": "text", "text": "{{instruction}}" },
-          { "type": "image" }
+          { "type": "text", "text": "{{caption}}" },
+          { "type" : "function", "name": "search_engine", "**args": { "query": "{{instruction}}" } }
         ]
       }
     ]
