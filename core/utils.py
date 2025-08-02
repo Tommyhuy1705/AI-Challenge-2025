@@ -13,7 +13,7 @@ def searchByKeyword(keyword: str) -> list[str]:
 def calSimilarity(vector1: list[float], vector2: list[float]) -> float:
     return 0.8 # Ví dụ độ tương đồng
 
-def search_vector(vector list[float]) -> list[str]:
+def search_vector(vector: list[float]) -> list[str]:
     return ["con chó", "đang chạy", "bãi cỏ"]
 
 def call_llm(prompt: str) -> str:
