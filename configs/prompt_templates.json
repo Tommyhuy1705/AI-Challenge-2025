@@ -1,0 +1,31 @@
+{
+  "training": {
+    "template": [
+      {
+        "role": "user",
+        "content": [
+          { "type": "text", "text": "{{instruction}}" }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          { "type": "text", "text": "{{caption}}" },
+          { "type": "function", "name": "search_engine", "**args": { "query": "{{instruction}}" } }
+        ]
+      }
+    ]
+  },
+  "inference": {
+    "template": [
+      {
+        "role": "user",
+        "content": [
+          { "type": "text", "text": "{{instruction}}" },
+          { "type": "text", "text": "{{caption}}" },
+          { "type" : "function", "name": "search_engine", "**args": { "query": "{{instruction}}" } }
+        ]
+      }
+    ]
+  }
+}
