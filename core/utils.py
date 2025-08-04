@@ -20,6 +20,12 @@ def call_llm(prompt: str) -> str:
     print(f"Prompt to LLM: {prompt}")
     return "Một con chó đang chạy trên bãi cỏ vào buổi chiều"
 
+<<<<<<< HEAD
+=======
+def transcribe_audio(path: str) -> str:
+    return "Một con chó chạy trong công viên. Sau đó, gặp một đứa bé đang chơi."
+
+>>>>>>> 4382bf569872f670e3ff38e9f07cbb3f7a8b66c9
 def transcribe_audio(path: str, start: float, end: float) -> str:
     return "Một con chó chạy trong công viên. Sau đó, gặp một đứa bé đang chơi."
 
@@ -50,7 +56,11 @@ def extractClipAroundBbox(keyframes: list[str], frame_index: int, bbox: dict) ->
 
 def classifyAction(clip: list[str]) -> str:
     # Gọi mô hình phân loại hành động
+<<<<<<< HEAD
     return "đang chạy" 
 
 
 
+=======
+    return "đang chạy"
+>>>>>>> 4382bf569872f670e3ff38e9f07cbb3f7a8b66c9
