@@ -1,3 +1,5 @@
+from core.utils import getVector, search_vector, call_llm, transcribe_audio, extract_keyframes
+import os
 def generate_multimodal_report(path: str):
     """
     Giả lập quá trình tạo báo cáo đa phương thức cho một ảnh.

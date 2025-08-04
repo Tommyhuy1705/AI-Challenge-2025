@@ -1,4 +1,6 @@
 from models import llm_model
+from core.utils import getVector, search_vector, call_llm, transcribe_audio, extract_keyframes
+import os
 def search_similarity(path: str, top_k: int = 5):
     """
     Giả lập quá trình tìm ảnh tương đồng với 1 ảnh đầu vào.

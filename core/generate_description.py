@@ -1,3 +1,5 @@
+from core.utils import getVector, search_vector, call_llm
+import os
 def generate_description(path: str) -> str:
     """
     Giả lập quá trình tạo mô tả cho một ảnh.
