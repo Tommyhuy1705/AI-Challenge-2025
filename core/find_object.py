@@ -1,7 +1,5 @@
-<<<<<<< HEAD
-=======
-from core.utils import getKeyword, searchByKeyword 
->>>>>>> 4382bf569872f670e3ff38e9f07cbb3f7a8b66c9
+from core.utils import getKeyword, searchByKeyword
+
 def find_manager(query: str) -> dict:
     """
     Purpose: tìm vật thể X được nhắc đến trong query.
@@ -27,9 +25,4 @@ def find_manager(query: str) -> dict:
         for i, path in enumerate(paths)
     }
 
-<<<<<<< HEAD
     return output
-
-=======
-    return output
->>>>>>> 4382bf569872f670e3ff38e9f07cbb3f7a8b66c9

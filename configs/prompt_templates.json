@@ -11,7 +11,11 @@
         "role": "assistant",
         "content": [
           { "type": "text", "text": "{{caption}}" },
-          { "type": "function", "name": "search_engine", "**args": { "query": "{{instruction}}" } }
+          { "type": "function", "name": "find_object", "**args": { "query": "{{instruction}}" } },
+          { "type": "function", "name": "count_object", "**args": { "query": "{{instruction}}", "scres": []} },
+          { "type": "function", "name": "object_action_detect", "**args": { "query": "{{instruction}}", "scres": [] } },
+          { "type": "function", "name": "transcribe_audio_from_video", "**args": { "query": "{{instruction}}", "scres": []} }
+          
         ]
       }
     ]
@@ -23,7 +27,10 @@
         "content": [
           { "type": "text", "text": "{{instruction}}" },
           { "type": "text", "text": "{{caption}}" },
-          { "type" : "function", "name": "search_engine", "**args": { "query": "{{instruction}}" } }
+          { "type": "function", "name": "find_object", "**args": { "query": "{{instruction}}" } },
+          { "type": "function", "name": "count_object", "**args": { "query": "{{instruction}}", "scres": []} },
+          { "type": "function", "name": "object_action_detect", "**args": { "query": "{{instruction}}", "scres": [] } },
+          { "type": "function", "name": "transcribe_audio_from_video", "**args": { "query": "{{instruction}}", "scres": []} }
         ]
       }
     ]

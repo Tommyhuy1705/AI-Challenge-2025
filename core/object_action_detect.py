@@ -1,7 +1,5 @@
-<<<<<<< HEAD
-=======
 from core.utils import getKeyword, extractKeyframes, detectObjectImage, extractClipAroundBbox, classifyAction
->>>>>>> 4382bf569872f670e3ff38e9f07cbb3f7a8b66c9
+
 def action_detect_manager(query: str, srces: list[str]) -> dict:
     """
     Purpose: tìm hành động của vật thể X.
@@ -54,10 +52,4 @@ def action_detect_manager(query: str, srces: list[str]) -> dict:
 
         all_results[src] = results
 
-<<<<<<< HEAD
     return all_results
-
-
-=======
-    return all_results
->>>>>>> 4382bf569872f670e3ff38e9f07cbb3f7a8b66c9

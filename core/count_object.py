@@ -1,4 +1,5 @@
 from core.utils import getKeyword, detectObjectImage, detectObjectVideo, countObjects
+
 def count_manager(query: str, srces: list[str]) -> dict:
     """
     Purpose: đếm vật thể X được nhắc đến trong query từ lựa chọn của các nguồn có sẵn.
