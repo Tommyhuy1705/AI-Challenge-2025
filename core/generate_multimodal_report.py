@@ -2,12 +2,22 @@ from core.utils import getVector, search_vector, call_llm, transcribe_audio, ext
 import os
 def generate_multimodal_report(path: str):
     """
-    Giả lập quá trình tạo báo cáo đa phương thức cho một ảnh.
-    Input:
-        path (str): ảnh đầu vào (đường dẫn hoặc tên file)
-    Output:
-        str: báo cáo đa phương thức
+    Purpose: Tạo báo cáo ngắn về nội dung đa phương thức (image + video + audio + text).
+
+    Circumtance: Khi người dùng muốn tạo một báo cáo tổng hợp về nội dung của một video bao gồm hình ảnh mô tả, transcript và thời gian.
+
+    Args:
+        video_path (str): Đường dẫn tới video cần phân tích.
+
+    Returns:
+        str: Đoạn báo cáo được sinh ra, bao gồm tóm tắt + mô tả ảnh + thời gian xuất hiện.
+
+    Pipelines: 
+        Trích xuất frame chính từ video -> Mô tả từng frame bằng vision + LLM ->
+        Trích transcript từ audio -> Tóm tắt toàn video -> Tổng hợp tất cả thành báo cáo định dạng text.
     """
+
+
     if not os.path.exists(path):
         return " Video is not exist"
     
