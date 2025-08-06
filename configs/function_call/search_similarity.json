@@ -1,0 +1,48 @@
+{
+  "training": {
+    "template": [
+      {
+        "role": "user",
+        "content": [{ "type": "text", "text": "{{instruction}}" }]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          { "type": "text", "text": "{{caption}}" },
+          {
+            "type": "function",
+            "name": "search_similarity",
+            "args": {
+              "query": "{{instruction}}",
+              "src": "{{path}}",
+              "top_k": "{{top_k}}"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "inference": {
+    "template": [
+      {
+        "role": "user",
+        "content": [{ "type": "text", "text": "{{instruction}}" }]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "function",
+            "name": "search_similarity",
+            "args": {
+              "query": "{{instruction}}",
+              "src": "{{path}}",
+              "top_k": "{{top_k}}"
+            }
+          },
+          { "type": "text", "text": "{{response}}" }
+        ]
+      }
+    ]
+  }
+}
