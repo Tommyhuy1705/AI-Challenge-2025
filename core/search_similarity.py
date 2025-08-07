@@ -1,7 +1,7 @@
 from models import llm_model
-from core.utils import getVector, search_vector, call_llm, transcribe_audio, extract_keyframes
+from core.utils import getVector, search_vector, call_llm, transcribe_audio
 import os
-def search_similarity(path: str, top_k: int = 5):
+def search_similarity(path: str, top_k: int):
     """
     Purpose: Tìm kiếm những ảnh hoặc nội dung có độ tương đồng cao với ảnh đầu vào.
 
