@@ -1,0 +1,101 @@
+{
+  "functions": [
+    {
+      "name": "find_object",
+      "description": "Find a specific object in images or videos based on the user query.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "srcs": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["query", "srcs"]
+      }
+    },
+    {
+      "name": "count_object",
+      "description": "Count the number of specific objects in images or videos based on the query.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "srcs": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["query", "srcs"]
+      }
+    },
+    {
+      "name": "object_action_detect",
+      "description": "Detect actions or behaviors of specific objects in images or videos.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "srcs": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["query", "srcs"]
+      }
+    },
+    {
+      "name": "transcribe_audio_from_video",
+      "description": "Transcribe audio content from videos into text.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "srcs": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["query", "srcs"]
+      }
+    },
+    {
+      "name": "search_similarity",
+      "description": "Find images, frames, or transcripts that are semantically similar to the input query.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "src": { "type": "string" },
+          "top_k": { "type": "integer" }
+        },
+        "required": ["query", "src", "top_k"]
+      }
+    },
+    {
+      "name": "generate_description",
+      "description": "Generate a brief description of the content in the image or video.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "src": { "type": "string" }
+        },
+        "required": ["query", "src"]
+      }
+    },
+    {
+      "name": "generate_multimodal_report",
+      "description": "Generate a comprehensive report from video, including frame descriptions, transcriptions, and summaries.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "src": { "type": "string" }
+        },
+        "required": ["query", "src"]
+      }
+    }
+  ]
+}

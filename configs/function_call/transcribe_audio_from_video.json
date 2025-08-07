@@ -1,0 +1,32 @@
+{
+  "training": {
+    "template": [
+      {
+        "role": "user",
+        "content": [{ "type": "text", "text": "{{instruction}}" }]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          { "type": "text", "text": "{{caption}}" },
+          { "type": "function", "name": "transcribe_audio_from_video", "args": { "query": "{{instruction}}", "srcs": [] } }
+        ]
+      }
+    ]
+  },
+  "inference": {
+    "template": [
+      {
+        "role": "user",
+        "content": [{ "type": "text", "text": "{{instruction}}" }]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          { "type": "function", "name": "transcribe_audio_from_video", "args": { "query": "{{instruction}}", "srcs": [] } },
+          { "type": "text", "text": "{{response}}" }
+        ]
+      }
+    ]
+  }
+}
