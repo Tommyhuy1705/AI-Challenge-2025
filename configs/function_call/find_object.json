@@ -1,32 +1,18 @@
 {
-  "training": {
-    "template": [
-      {
-        "role": "user",
-        "content": [{ "type": "text", "text": "{{instruction}}" }]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          { "type": "text", "text": "{{caption}}" },
-          { "type": "function", "name": "find_object", "args": { "query": "{{instruction}}", "srcs": [] } }
-        ]
-      }
-    ]
-  },
-  "inference": {
-    "template": [
-      {
-        "role": "user",
-        "content": [{ "type": "text", "text": "{{instruction}}" }]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          { "type": "function", "name": "find_object", "args": { "query": "{{instruction}}", "srcs": [] } },
-          { "type": "text", "text": "{{response}}" }
-        ]
-      }
-    ]
-  }
+    "type": "function",
+    "function": {
+        "name": "find_object",
+        "description": "Extract keywords from the user's query and search the database for matching videos or images containing the wanted object.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Free-text user query describing the object to find (e.g., 'find all dogs in the garden')"
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": False
+        }
+    }
 }
