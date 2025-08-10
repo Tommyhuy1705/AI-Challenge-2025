@@ -1,32 +1,22 @@
 {
-  "training": {
-    "template": [
-      {
-        "role": "user",
-        "content": [{ "type": "text", "text": "{{instruction}}" }]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          { "type": "text", "text": "{{caption}}" },
-          { "type": "function", "name": "object_action_detect", "args": { "query": "{{instruction}}", "srcs": [] } }
-        ]
-      }
-    ]
-  },
-  "inference": {
-    "template": [
-      {
-        "role": "user",
-        "content": [{ "type": "text", "text": "{{instruction}}" }]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          { "type": "function", "name": "object_action_detect", "args": { "query": "{{instruction}}", "srcs": [] } },
-          { "type": "text", "text": "{{response}}" }
-        ]
-      }
-    ]
-  }
+    "type": "function",
+    "function": {
+        "name": "object_action_detect",
+        "description": "Extract keywords from the user's query, detect the action of the wanted object in selecting videos or images path.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Free-text user query describing the object and its action to extract wanted keywords for detecting actions. (e.g., 'find driving man in the video -> keyword: driving')."
+                },
+                "src": {
+                    "type": "string",
+                    "description": "A video or image path is selected by the user (e.g., 'video1.mp4')."
+                }
+            },
+            "required": ["query", "src"],
+            "additionalProperties": False
+        }
+    }
 }
