@@ -1,46 +1,18 @@
 {
-  "training": {
-    "template": [
-      {
-        "role": "user",
-        "content": [{ "type": "text", "text": "{{instruction}}" }]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          { "type": "text", "text": "{{caption}}" },
-          {
-            "type": "function",
-            "name": "generate_description",
-            "args": {
-              "query": "{{instruction}}",
-              "src": "{{path}}"
-            }
-          }
-        ]
-      }
-    ]
-  },
-  "inference": {
-    "template": [
-      {
-        "role": "user",
-        "content": [{ "type": "text", "text": "{{instruction}}" }]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "type": "function",
-            "name": "generate_description",
-            "args": {
-              "query": "{{instruction}}",
-              "src": "{{path}}"
-            }
-          },
-          { "type": "text", "text": "{{response}}" }
-        ]
-      }
-    ]
-  }
+    "type": "function",
+    "function": {
+        "name": "generate_description",
+        "description": "Produce a clear, concise, and contextually accurate English description of the given multimedia content (image, video, or audio). The description should cover visual or auditory elements, actions, objects, people, and relevant scene context. For example, for an image of a park with people jogging, the description could be 'A sunny park scene with several people jogging on a tree-lined path'.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Free-text user query or reference describing the multimedia content to be analyzed (e.g., 'Describe this image of a busy street at night')."
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": false
+        }
+    }
 }

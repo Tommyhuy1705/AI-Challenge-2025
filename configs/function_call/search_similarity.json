@@ -1,48 +1,22 @@
 {
-  "training": {
-    "template": [
-      {
-        "role": "user",
-        "content": [{ "type": "text", "text": "{{instruction}}" }]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          { "type": "text", "text": "{{caption}}" },
-          {
-            "type": "function",
-            "name": "search_similarity",
-            "args": {
-              "query": "{{instruction}}",
-              "src": "{{path}}",
-              "top_k": "{{top_k}}"
-            }
-          }
-        ]
-      }
-    ]
-  },
-  "inference": {
-    "template": [
-      {
-        "role": "user",
-        "content": [{ "type": "text", "text": "{{instruction}}" }]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "type": "function",
-            "name": "search_similarity",
-            "args": {
-              "query": "{{instruction}}",
-              "src": "{{path}}",
-              "top_k": "{{top_k}}"
-            }
-          },
-          { "type": "text", "text": "{{response}}" }
-        ]
-      }
-    ]
-  }
+    "type": "function",
+    "function": {
+        "name": "search_similarity",
+        "description": "Retrieve the most similar multimedia items (images, videos, audio) from the database based on the given query or reference input. The similarity search should use semantic meaning rather than only exact keyword matches. For example, if the query is 'Find images similar to a golden retriever playing in the snow', the function should return visually similar scenes even if they do not have identical metadata.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Free-text user query or reference content describing what to match (e.g., 'photos similar to this mountain sunrise')."
+                },
+                "top_k": {
+                    "type": "integer",
+                    "description": "Number of most relevant results to return (e.g., 5 for top 5 matches)."
+                }
+            },
+            "required": ["query", "top_k"],
+            "additionalProperties": false
+        }
+    }
 }
