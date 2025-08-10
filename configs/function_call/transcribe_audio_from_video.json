@@ -1,32 +1,22 @@
 {
-  "training": {
-    "template": [
-      {
-        "role": "user",
-        "content": [{ "type": "text", "text": "{{instruction}}" }]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          { "type": "text", "text": "{{caption}}" },
-          { "type": "function", "name": "transcribe_audio_from_video", "args": { "query": "{{instruction}}", "srcs": [] } }
-        ]
-      }
-    ]
-  },
-  "inference": {
-    "template": [
-      {
-        "role": "user",
-        "content": [{ "type": "text", "text": "{{instruction}}" }]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          { "type": "function", "name": "transcribe_audio_from_video", "args": { "query": "{{instruction}}", "srcs": [] } },
-          { "type": "text", "text": "{{response}}" }
-        ]
-      }
-    ]
-  }
+    "type": "function",
+    "function": {
+        "name": "transcribe_audio_from_video",
+        "description": "Extract keywords from the user's query, summarize the main content or take a conversation with a specific timing",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "User input a free-text that to summarize the selecting's content from the audio or to extract a conversation with the specific timing. (e.g., 'what's the video talk about?', 'give me a conversation from the 2nd minute to the 12th minute.')"
+                },
+                "src": {
+                    "type": "string",
+                    "description": "A video or image path is selected by the user (e.g., 'video1.mp4')."
+                }
+            },
+            "required": ["query", "src"],
+            "additionalProperties": False
+        }
+    }
 }
