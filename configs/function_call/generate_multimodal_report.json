@@ -2,13 +2,13 @@
     "type": "function",
     "function": {
         "name": "generate_multimodal_report",
-        "description": "Analyze and integrate information from multiple modalities (text, image, video, audio) to create a unified, structured English report. The output should summarize key findings, highlight important details, and present them in a logically organized format. For example, if the query is 'Generate a report about the environmental impact of this river from provided video and text data', the function should extract insights from both video and text, then merge them into a coherent report.",
+        "description": "Create a structured English report by combining information from multiple modalities (text, image, video, audio).",
         "parameters": {
             "type": "object",
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "Free-text user query describing the content or topic for which the report should be generated (e.g., 'Analyze and summarize the security issues from this CCTV footage and transcript')."
+                    "description": "Text describing the topic or content to include in the report. e.g. Summarize the security issues from this CCTV footage and transcript."
                 }
             },
             "required": ["query"],

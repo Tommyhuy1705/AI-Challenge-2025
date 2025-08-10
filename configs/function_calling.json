@@ -1,101 +1,58 @@
 {
-  "functions": [
-    {
-      "name": "find_object",
-      "description": "Find a specific object in images or videos based on the user query.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": { "type": "string" },
-          "srcs": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
-        },
-        "required": ["query", "srcs"]
-      }
-    },
-    {
-      "name": "count_object",
-      "description": "Count the number of specific objects in images or videos based on the query.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": { "type": "string" },
-          "srcs": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
-        },
-        "required": ["query", "srcs"]
-      }
-    },
-    {
-      "name": "object_action_detect",
-      "description": "Detect actions or behaviors of specific objects in images or videos.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": { "type": "string" },
-          "srcs": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
-        },
-        "required": ["query", "srcs"]
-      }
-    },
-    {
-      "name": "transcribe_audio_from_video",
-      "description": "Transcribe audio content from videos into text.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": { "type": "string" },
-          "srcs": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
-        },
-        "required": ["query", "srcs"]
-      }
-    },
-    {
-      "name": "search_similarity",
-      "description": "Find images, frames, or transcripts that are semantically similar to the input query.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": { "type": "string" },
-          "src": { "type": "string" },
-          "top_k": { "type": "integer" }
-        },
-        "required": ["query", "src", "top_k"]
-      }
-    },
-    {
-      "name": "generate_description",
-      "description": "Generate a brief description of the content in the image or video.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": { "type": "string" },
-          "src": { "type": "string" }
-        },
-        "required": ["query", "src"]
-      }
-    },
-    {
-      "name": "generate_multimodal_report",
-      "description": "Generate a comprehensive report from video, including frame descriptions, transcriptions, and summaries.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": { "type": "string" },
-          "src": { "type": "string" }
-        },
-        "required": ["query", "src"]
-      }
+    "type": "function",
+    "function": {
+        "name": "search_similarity",
+        "description": "Search the database for multimedia items (images, videos, audio) most similar to the given query or reference input.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Text or reference content to find similar items. e.g. photos similar to this mountain sunrise."
+                },
+                "top_k": {
+                    "type": "integer",
+                    "description": "Number of most relevant results to return (e.g., 5 for top 5 matches)."
+                }
+            },
+            "required": ["query", "top_k"],
+            "additionalProperties": false
+        }
     }
-  ]
+}
+{
+    "type": "function",
+    "function": {
+        "name": "generate_description",
+        "description": "Generate a short, clear English description of the given multimedia content (image, video, or audio).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Text or reference describing the content to be described. e.g. Describe this image of a busy street at night."
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": false
+        }
+    }
+}
+{
+    "type": "function",
+    "function": {
+        "name": "generate_multimodal_report",
+        "description": "Create a structured English report by combining information from multiple modalities (text, image, video, audio).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Text describing the topic or content to include in the report. e.g. Summarize the security issues from this CCTV footage and transcript."
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": false
+        }
+    }
 }
