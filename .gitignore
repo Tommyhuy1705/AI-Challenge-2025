@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Logs and debug
+*.log
+*.tmp
+
+# Environment variables
+.env
+.env.*
+
+# Virtual environment
+venv/
+.env/
+.venv/
+
+# Editor folders
+.vscode/
+.idea/
+
+# Test coverage / pytest
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Docker
+*.dockerfile
