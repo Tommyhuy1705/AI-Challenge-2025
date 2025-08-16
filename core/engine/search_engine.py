@@ -1,7 +1,34 @@
-from models import llm_model
-from core.utils import getVector, search_vector, call_llm, transcribe_audio
-import os
-def search_similarity(path: str, top_k: int):
+from core.supporter.helper import getKeyword, searchByKeyword 
+def search(query: str) -> dict:
+    """
+    Purpose: tìm vật thể X được nhắc đến trong query.
+
+    Args: query (str): Câu truy vấn của người dùng.
+
+    Returns:
+        dict: Kết quả JSON, ví dụ:
+            {
+              "video1": path1.mp4,
+              "video2": path2.mp4,
+            }
+
+    Pipelines: Lấy keyword từ query -> chuyển đổi thành vector -> tìm kiếm trong database -> trả về các video paths -> output JSON
+    """
+    
+    target = getKeyword(query)
+    results = converttovector(target)
+    paths = [r for r in results]
+
+    
+    output = {
+        f"video{i+1}": path
+        for i, path in enumerate(paths)
+    }
+    
+
+    return output
+
+def search_by_image(path: str, top_k: int):
     """
     Purpose: Tìm kiếm những ảnh hoặc nội dung có độ tương đồng cao với ảnh đầu vào.
 

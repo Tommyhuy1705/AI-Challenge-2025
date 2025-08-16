@@ -1,4 +1,4 @@
-from core.utils import transcribe_audio, processQueryOnTranscript
+from core.supporter.helper import transcribe_audio, processQueryOnTranscript
 import re
 def transcribe_audio_from_video(query: str, srces: list[str]) -> dict:
     """
