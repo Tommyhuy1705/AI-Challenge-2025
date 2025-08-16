@@ -1,5 +1,5 @@
-from core.utils import getKeyword, extractKeyframes, detectObjectImage, extractClipAroundBbox, classifyAction
-def action_detect_manager(query: str, srces: list[str]) -> dict:
+from core.supporter.helper import getKeyword, extractKeyframes, detectObjectImage, extractClipAroundBbox, classifyAction
+def action_detect(query: str, srces: list[str]) -> dict:
     """
     Purpose: tìm hành động của vật thể X.
 

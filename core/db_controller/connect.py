@@ -1,0 +1,1 @@
+# connect tới database-> database? warning? lỗi mạng? 

@@ -1,5 +1,6 @@
-from core.utils import getKeyword, detectObjectImage, detectObjectVideo, countObjects
-def count_manager(query: str, srces: list[str]) -> dict:
+from core.supporter.helper import getKeyword, detectObjectImage, detectObjectVideo, countObjects
+
+def count(query: str, srces: list[str]) -> dict:
     """
     Purpose: đếm vật thể X được nhắc đến trong query từ lựa chọn của các nguồn có sẵn.
 
@@ -25,9 +26,9 @@ def count_manager(query: str, srces: list[str]) -> dict:
     
     for src in srces:
         if src.endswith('.jpg', '.jpeg', '.png'):
-            tracker = detectObjectImage(src, target)
+            tracker = detect_object_image(src, target)
         elif src.endswith('.mp4', 'avi', '.mov'):
-            tracker = detectObjectVideo(src, target)
+            tracker = detect_object_video(src, target) 
         else:
             raise ValueError("Không tồn tại định dạng ảnh hoặc video này!")
 

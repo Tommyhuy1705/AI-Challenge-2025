@@ -1,3 +1,5 @@
+# Mỗi model tạo 1 class riêng 
+
 ## Project Structure  
 ```plaintext
 AI Challenge 2025/
