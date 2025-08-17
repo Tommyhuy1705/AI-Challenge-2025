@@ -1,43 +1,142 @@
 {
-  "training": {
-    "template": [
-      {
-        "role": "user",
-        "content": [
-          { "type": "text", "text": "{{instruction}}" }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          { "type": "text", "text": "{{caption}}" },
-          { "type": "function", "name": "find_object", "**args": { "query": "{{instruction}}" } },
-          { "type": "function", "name": "count_object", "**args": { "query": "{{instruction}}", "scres": [] } },
-          { "type": "function", "name": "object_action_detect", "**args": { "query": "{{instruction}}", "scres": [] } },
-          { "type": "function", "name": "transcribe_audio_from_video", "**args": { "query": "{{instruction}}", "scres": [] } },
-          { "type": "function", "name": "search_similarity", "**args": { "query": "{{instruction}}", "src": "{{path}}", "top_k": "{{top_k}}" } },
-          { "type": "function", "name": "generate_description", "**args": { "query": "{{instruction}}", "src": "{{path}}" } },
-          { "type": "function", "name": "generate_multimodal_report", "**args": { "query": "{{instruction}}", "src": "{{path}}" } }
-        ]
+    "type": "function",
+    "function": {
+        "name": "search_similarity",
+        "description": "Search the database for multimedia items (images, videos, audio) most similar to the given query or reference input.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Text or reference content to find similar items. e.g. photos similar to this mountain sunrise."
+                },
+                "top_k": {
+                    "type": "integer",
+                    "description": "Number of most relevant results to return (e.g., 5 for top 5 matches)."
+                }
+            },
+            "required": ["query", "top_k"],
+            "additionalProperties": false
+        }
+    }
+}
+{
+    "type": "function",
+    "function": {
+        "name": "generate_description",
+        "description": "Generate a short, clear English description of the given multimedia content (image, video, or audio).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Text or reference describing the content to be described. e.g. Describe this image of a busy street at night."
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": false
+        }
+    }
+}
+{
+    "type": "function",
+    "function": {
+        "name": "generate_multimodal_report",
+        "description": "Create a structured English report by combining information from multiple modalities (text, image, video, audio).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Text describing the topic or content to include in the report. e.g. Summarize the security issues from this CCTV footage and transcript."
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": false
+        }
+    }
+}
+{
+  "type": "function",
+    "function": {
+        "name": "find_object",
+        "description": "Extract keywords from the user's query and search the database for matching videos or images containing the wanted object.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Free-text user query describing the object to find (e.g., 'find all dogs in the garden')"
+                }
+            },
+            "required": ["query"],
+            "additionalProperties": false
+        }
+    }
+}
+{
+"type": "function",
+  "function": {
+      "name": "count_object",
+      "description": "Extract keywords from the user's query, detect and count the wanted object in selecting videos or images path.",
+      "parameters": {
+          "type": "object",
+          "properties": {
+              "query": {
+                  "type": "string",
+                  "description": "Free-text user query describing the object to extract wanted keywords for detect and count. (e.g., 'count all dogs in the video -> keyword: dogs')."
+              },
+              "src": {
+                  "type": "string",
+                  "description": "A video or image path is selected by the user (e.g., 'video1.mp4')."
+              }
+          },
+          "required": ["query", "src"],
+          "additionalProperties": false
       }
-    ]
-  },
-  "inference": {
-    "template": [
-      {
-        "role": "user",
-        "content": [
-          { "type": "text", "text": "{{instruction}}" },
-          { "type": "text", "text": "{{caption}}" },
-          { "type": "function", "name": "find_object", "**args": { "query": "{{instruction}}" } },
-          { "type": "function", "name": "count_object", "**args": { "query": "{{instruction}}", "scres": [] } },
-          { "type": "function", "name": "object_action_detect", "**args": { "query": "{{instruction}}", "scres": [] } },
-          { "type": "function", "name": "transcribe_audio_from_video", "**args": { "query": "{{instruction}}", "scres": [] } },
-          { "type": "function", "name": "search_similarity", "**args": { "query": "{{instruction}}", "src": "{{path}}", "top_k": "{{top_k}}" } },
-          { "type": "function", "name": "generate_description", "**args": { "query": "{{instruction}}", "src": "{{path}}" } },
-          { "type": "function", "name": "generate_multimodal_report", "**args": { "query": "{{instruction}}", "src": "{{path}}" } }
-        ]
-      }
-    ]
   }
+}
+{
+  "type": "function",
+    "function": {
+        "name": "object_action_detect",
+        "description": "Extract keywords from the user's query, detect the action of the wanted object in selecting videos or images path.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Free-text user query describing the object and its action to extract wanted keywords for detecting actions. (e.g., 'find driving man in the video -> keyword: driving')."
+                },
+                "src": {
+                    "type": "string",
+                    "description": "A video or image path is selected by the user (e.g., 'video1.mp4')."
+                }
+            },
+            "required": ["query", "src"],
+            "additionalProperties": false
+        }
+    }
+}
+{
+  "type": "function",
+    "function": {
+        "name": "transcribe_audio_from_video",
+        "description": "Extract keywords from the user's query, summarize the main content or take a conversation with a specific timing",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "User input a free-text that to summarize the selecting's content from the audio or to extract a conversation with the specific timing. (e.g., 'what's the video talk about?', 'give me a conversation from the 2nd minute to the 12th minute.')"
+                },
+                "src": {
+                    "type": "string",
+                    "description": "A video or image path is selected by the user (e.g., 'video1.mp4')."
+                }
+            },
+            "required": ["query", "src"],
+            "additionalProperties": false
+        }
+    }
 }
