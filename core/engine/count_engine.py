@@ -1,6 +1,5 @@
-from core.supporter.helper import getKeyword, detectObjectImage, detectObjectVideo, countObjects
 
-def count(query: str, srces: list[str]) -> dict:
+def count(object: str, src: str) -> dict:
     """
     Purpose: đếm vật thể X được nhắc đến trong query từ lựa chọn của các nguồn có sẵn.
 

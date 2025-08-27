@@ -37,7 +37,7 @@
             "additionalProperties": false
         }
     }
-}
+},
 {
     "type": "function",
     "function": {
@@ -77,15 +77,11 @@
 {
 "type": "function",
   "function": {
-      "name": "count_object",
+      "name": "count",
       "description": "Extract keywords from the user's query, detect and count the wanted object in selecting videos or images path.",
       "parameters": {
           "type": "object",
           "properties": {
-              "query": {
-                  "type": "string",
-                  "description": "Free-text user query describing the object to extract wanted keywords for detect and count. (e.g., 'count all dogs in the video -> keyword: dogs')."
-              },
               "src": {
                   "type": "string",
                   "description": "A video or image path is selected by the user (e.g., 'video1.mp4')."

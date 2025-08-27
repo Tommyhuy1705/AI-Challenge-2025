@@ -1,8 +1,7 @@
-# Kho luu model 
-# from core.model.object_detection_model import DetectMoel
+from core.models.clip_model import CLIPModel
 
-# class ModelRegistry:
-#    object_detection_model: DetectMoel = None
+class ModelRegistry:
+   clip_model: CLIPModel = None
 
-# def load_detect_model():
-#    ModelRegistry.object_detection_model = DetectMoel()
+def load_clip_model():
+   ModelRegistry.clip_model = CLIPModel.load()
