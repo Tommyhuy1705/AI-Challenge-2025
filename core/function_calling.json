@@ -12,7 +12,7 @@
                         "items": {
                             "type": "string"
                         },
-                        "description": "An ordered list of keywords containing object, object's action, places, each represented as a string only english. (e.g., 'the woman is running in the park' -> ['woman', 'running', 'park'])"
+                        "description": "An ordered list of keywords containing object, object's action, places, situation, each represented as a string only english. (e.g., 'Every morning, the woman runs in the park' -> ['woman', 'runs', 'park, 'morning'])"
                     }
                 },
                 "required": ["keyword"],
