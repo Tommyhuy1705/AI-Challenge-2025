@@ -8,14 +8,13 @@ from weaviate import Client
 from weaviate.auth import AuthApiKey
 from weaviate.classes.config import Configure, DataType, Property, VectorDistances, GenerativeSearches
 import weaviate.classes.config as wvc
-from weaviate.classes.query import MetadataQuery, Filter
+from weaviate.classes.query import MetadataQuery, Filter, QueryReference
 
 COLLECTION_NAME = "aic-2025"
 
 def get_info_by_frameId(client: Client, frame_id: str, collection_name: str = COLLECTION_NAME) -> dict:
     frame_col = client.collections.get("Keyframe")
     info = frame_col.query.fetch_objects(
-        #frame_id,
         filters=Filter.by_property("keyframeId").equal(frame_id),
         #include_vector=True,
         return_properties=["keyframeId", "keyframePath", "videoId", "objects", "timestamp", "frameIndex"]
@@ -45,7 +44,7 @@ def get_all_frames_by_videoId(client: Client, video_id: str, collection_name: st
     video_col = client.collections.get("Video")
     frames = video_col.query.fetch_objects(
         filters=Filter.by_property("videoId").equal(video_id),
-        include_vector = True,
+        #include_vector = True,
         return_properties = ["keyframeIds", "keyframePaths"]
     )
     return frames
@@ -53,7 +52,7 @@ def get_all_frames_by_videoId(client: Client, video_id: str, collection_name: st
 def get_keyword_by_videoId(client: Client, video_id: str, collection_name: str = COLLECTION_NAME) -> dict:
     video_col = client.collections.get("Video")
     keywords = video_col.query.fetch_objects(
-        uuid = video_id,
+        filters=Filter.by_property("videoId").equal(video_id),
         include_vector = True,
         return_properties = ["keywords"]
     )
@@ -62,7 +61,7 @@ def get_keyword_by_videoId(client: Client, video_id: str, collection_name: str =
 def get_objects_by_frameId(client: Client, frame_id: str, collection_name: str = COLLECTION_NAME) -> dict:
     frame_col = client.collections.get("Keyframe")
     objects = frame_col.query.fetch_objects(
-        uuid = frame_id,
+        filters=Filter.by_property("keyframeId").equal(frame_id),
         include_vector = True,
         return_properties = ["objects"]
     )
@@ -71,7 +70,7 @@ def get_objects_by_frameId(client: Client, frame_id: str, collection_name: str =
 def get_vector_by_frameId(client: Client, frame_id: str, collection_name: str = COLLECTION_NAME):
     frame_col = client.collections.get("Keyframe")
     vectors = frame_col.query.fetch_objects(
-        uuid = frame_id,
+        filters=Filter.by_property("keyframeId").equal(frame_id),
         include_vector = True,
         #return_properties = ["vectorFrame"]
     )
@@ -79,20 +78,25 @@ def get_vector_by_frameId(client: Client, frame_id: str, collection_name: str = 
 def get_timestamp_by_frameId(client: Client, frame_id: str, collection_name: str = COLLECTION_NAME):
     frame_col = client.collections.get("Keyframe")
     timestamp = frame_col.query.fetch_objects(
-        uuid = frame_id,
-        include_vector = True,
+        filters=Filter.by_property("keyframeId").equal(frame_id),
+        #include_vector = True,
         return_properties = ["timestamp"]
     )
     return timestamp
 
 def get_videoId_by_frameId(client: Client, frame_id: str, limit: int = 3, collection_name: str = COLLECTION_NAME) -> dict:
     frame_col = client.collections.get("Keyframe")
-    videoId = frame_col.query.fetch_objects(
-        uuid = frame_id,
+    videoFrame = frame_col.query.fetch_objects(
+        filters=Filter.by_property("keyframeId").equal(frame_id),
         limit = limit,
-        return_properties = ["inVideo"]
+        return_references=[
+            QueryReference(
+                link_on="inVideo",
+                return_properties=["videoId"]
+            )
+        ]
     )
-    return videoId
+    return videoFrame
 
 def update_by_videoId(client: Client, video_id: str, collection_name: str = COLLECTION_NAME) -> bool:
     video_col = client.collections.get("Video")
