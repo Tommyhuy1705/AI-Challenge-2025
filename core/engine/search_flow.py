@@ -26,7 +26,7 @@ def find_flow(state: list[str], limit: int = 5):
 
     # Search
     for i, (s, vec) in enumerate(zip(state, state_vectors)):
-        frames = get_all_frames_by_vector(vector=vec, limit=limit)
+        frames = get_all_frames_by_vector(client=client, vector=vec, limit=limit)
 
         frame_list = []
         for obj in frames.objects:
