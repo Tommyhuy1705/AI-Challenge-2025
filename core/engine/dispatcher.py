@@ -4,10 +4,11 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import json
 from core.engine.search_engine import search
+from core.engine.search_flow import find_flow
 
 def call_api(user_query: str):
     load_dotenv()
-    hf_token = os.getenv("HF_SECRET")
+    hf_token = os.getenv("HF_token")
 
     client = OpenAI(
     base_url="https://router.huggingface.co/v1",
@@ -50,14 +51,10 @@ def navigate(response: dict):
 
             if fn_name == "search":
                 result = search(**args)
-                print("Function result:", result)
-                # Có thể trả về trực tiếp cho user
-                return f"Function S is running..."
+                return result
             
             elif fn_name == "find_flow":
-                # result = find_flow(**args)
-                print("Function result:", result)
-                # Có thể trả về trực tiếp cho user
+                result = find_flow(**args)
                 return result
     else:
         # Không có tool_call, chỉ in content

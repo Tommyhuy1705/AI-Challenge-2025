@@ -64,5 +64,6 @@ def search(keyword: list[str], limit: int = 5) -> dict:
         # Nếu số lượng đã ≤ final_limit thì dừng sớm
         if len(temp_results) <= limit:
             break
+    client.close()
 
     return results
