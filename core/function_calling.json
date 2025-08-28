@@ -36,6 +36,7 @@
                         },
                         "description": "An ordered list of key states or moments of the action, each represented as a string only english."
                     }
+
                 },
                 "required": ["state"],
                 "additionalProperties": false
