@@ -126,26 +126,37 @@ if __name__ == "__main__":
 
     if client.is_ready():
         print("Connection to Weaviate is ready.")
-        # text = "woman red dress cup"
-        # test = test_get_all_frames_by_vector(client, text)
-        # print(test)
+        text = "woman red dress cup"
         frame_id = "L26_V331_018"
+        video_id = "L26_V331"
+
         info = test_get_info_by_frameId(client, frame_id)
         print(info)
 
-        # video_id = "L26_V331"
-        # info_video = test_get_info_by_videoId(client, video_id)
-        # print(info_video)
+        info_video = test_get_info_by_videoId(client, video_id)
+        print(info_video)
 
+        test = test_get_all_frames_by_vector(client, text)
+        print(test)
 
-        # test_get_info_by_frameId(client, "your-frame-uuid")
-        # test_get_info_by_videoId(client, "your-video-uuid")
-        # test_get_all_frames_by_videoId(client, "your-video-uuid")
-        # test_get_keyword_by_videoId(client, "your-video-uuid")
-        # test_get_objects_by_frameId(client, "your-frame-uuid")
-        # test_get_vector_by_frameId(client, "your-frame-uuid")
-        # test_get_timestamp_by_frameId(client, "your-frame-uuid")
-        # test_get_videoId_by_frameId(client, "your-frame-uuid")
+        frames_id = test_get_all_frames_by_videoId(client, video_id)
+        print(frames_id)
+
+        keyword_video = test_get_keyword_by_videoId(client, video_id)
+        print(keyword_video)
+
+        objects_frame = test_get_objects_by_frameId(client, frame_id)
+        print(objects_frame)
+
+        vector_frameId = test_get_vector_by_frameId(client, frame_id)
+        print(vector_frameId)
+
+        time_frameId = test_get_timestamp_by_frameId(client, frame_id)
+        print(time_frameId)
+
+        video_from_frame = test_get_videoId_by_frameId(client, frame_id)
+        print(video_from_frame)
+
         # test_update_by_videoId(client, "your-video-uuid")
         # test_delete_videoId_by_id(client, "your-video-uuid")
         # test_delete_multipleObjects_by_id(client)
