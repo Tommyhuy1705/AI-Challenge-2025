@@ -3,13 +3,13 @@ from core.engine.dispatcher import call_api, navigate
 
 search_bp = Blueprint('search', __name__)
 
-@search_bp.route('/query', methods=['POST'])
+@search_bp.route('/', methods=['POST'])
 def search_query():
     """
     REST API Endpoint để tìm kiếm video dựa trên mô tả của người dùng.
     
     Cách sử dụng:
-    Gửi POST request đến endpoint: /api/search/query
+    Gửi POST request đến endpoint: /api/search
     
     Request Body (JSON):
     {

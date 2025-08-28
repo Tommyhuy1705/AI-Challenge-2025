@@ -8,6 +8,10 @@ from core import boostrap
 from routes.search import search_bp
 load_dotenv()
 
+# must install
+# pip install git+https://github.com/openai/CLIP.git
+# pip install -U weaviate-client
+ 
 app = Flask(__name__)
 
 # Register blueprints

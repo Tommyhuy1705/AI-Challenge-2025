@@ -40,5 +40,6 @@ def find_flow(state: list[str], limit: int = 5):
             "state": s,
             "frames": frame_list
         })
+    client.close()
 
     return results

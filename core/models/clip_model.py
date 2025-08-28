@@ -1,4 +1,3 @@
-# pip install git+https://github.com/openai/CLIP.git
 import torch
 import clip
 
@@ -8,7 +7,7 @@ class CLIPModel:
         self.preprocess = preprocess
     
     @classmethod
-    def load(cls, model, preprocess):
+    def load(cls):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model, preprocess = clip.load("ViT-B/32", device=device)
         model.share_memory() 
