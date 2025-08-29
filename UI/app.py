@@ -1,7 +1,11 @@
 import streamlit as st
 from typing import List, Dict
-import random
+import requests
+from collections import defaultdict
+import os
+from PIL import Image
 
+API_URL = "http://127.0.0.1:5000/api/search"
 
 
 def render_search_form():
@@ -22,26 +26,55 @@ def render_search_form():
     return None, None, None, None, None
 
 
-def render_image_card(video_id: str, frame: str):
+def render_image_card(keyframe_id: str, keyframe_path: str):
     """Render 1 card chứa ảnh + nút hành động."""
-    st.image("https://via.placeholder.com/150", caption=f"{video_id}_{frame}", width=150)
+    st.image("https://via.placeholder.com/150", caption=keyframe_id, width=150)
+    st.text(keyframe_path)
+
     cols = st.columns(3)
     with cols[0]:
-        st.button("Image", key=f"{video_id}_{frame}_img")
+        st.button("Image", key=f"{keyframe_id}_img")
     with cols[1]:
-        st.button("Youtube", key=f"{video_id}_{frame}_yt")
+        st.button("Youtube", key=f"{keyframe_id}_yt")
     with cols[2]:
-        st.button("Similar", key=f"{video_id}_{frame}_sim")
+        st.button("Similar", key=f"{keyframe_id}_sim")
 
 
-def render_results(results: Dict[str, List[str]]):
-    """Render kết quả theo nhóm video_id."""
-    for video_id, frames in results.items():
-        st.markdown(f"### {video_id}")
-        cols = st.columns(5)
-        for i, frame in enumerate(frames):
-            with cols[i % 5]:
-                render_image_card(video_id, frame)
+def render_results(results: List[Dict]):
+    """Render kết quả keyframes từ API."""
+    st.subheader("Search Results")
+    cols = st.columns(5)
+
+    for i, frame in enumerate(results):
+        with cols[i % 5]:
+            render_image_card(frame["keyframeId"], frame["keyframePath"])
+
+def group_frames_by_video(api_response: dict):
+    """
+    Gom keyframes theo video từ JSON trả về.
+    Trả về dict: {video_id: [list local image paths]}
+    """
+    grouped = defaultdict(list)
+
+    if not api_response.get("success"):
+        return {}
+
+    frames = api_response["response"][0]["frames"]
+
+    for f in frames:
+        path = f["keyframePath"]
+        video_id = os.path.basename(os.path.dirname(path))
+        grouped[video_id].append(path)
+
+    return dict(grouped)
+
+@st.cache_data
+def load_image_from_path(path: str):
+    try:
+        return Image.open(path)
+    except Exception as e:
+        print(f"Lỗi khi load ảnh {path}: {e}")
+        return None
 
 
 def main():
@@ -55,9 +88,33 @@ def main():
     if query:
         st.write(f"Query 1: {query}, Query 2: {optional}, SQL Filter: {sql_filter if sql_filter else 'None'}")
 
-        # results = mock_search_engine(query, optional, sql_filter, file)
-        render_results(results)
+        # Gửi request tới Flask API
+        try:
+            payload = {"query": query}
+            response = requests.post(API_URL, json=payload)
+            response.raise_for_status()
+            data = response.json()
 
+            if data.get("success"):
+                frames = data["response"][0]["frames"]
 
+                # 🔹 Gom frames theo video
+                grouped = group_frames_by_video({"success": True, "response": [{"frames": frames}]})
+
+                # 🔹 Hiển thị ảnh theo video
+                for vid, paths in grouped.items():
+                    with st.expander(f"🎞 Video: {vid} ({len(paths)} frames)"):
+                        cols = st.columns(3)
+                        for i, p in enumerate(paths):
+                            img = load_image_from_path(p)
+                            if img:
+                                with cols[i % 3]:
+                                    st.image(img, caption=os.path.basename(p), use_column_width=True)
+            else:
+                st.error("No results found")
+
+        except Exception as e:
+            st.error(f"API request failed: {e}")
+            
 if __name__ == "__main__":
     main()
