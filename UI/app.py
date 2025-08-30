@@ -119,7 +119,7 @@ def main():
                             img = load_image_from_path(p)
                             if img:
                                 with cols[i % 3]:
-                                    st.image(img, caption=os.path.basename(p), use_column_width=True)
+                                    st.image(img, caption=os.path.basename(p), use_container_width=True)
             except Exception as e:
                 st.error(f"render error: {e}")
         else:
