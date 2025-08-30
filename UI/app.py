@@ -64,6 +64,8 @@ def group_frames_by_video(api_response: dict):
         path = f["keyframePath"]
         video_id = os.path.basename(os.path.dirname(path))
         grouped[video_id].append(path)
+    
+    
 
     return dict(grouped)
 
@@ -88,30 +90,42 @@ def main():
         st.write(f"Query 1: {query}, Query 2: {optional}, Limit: {limit}, File: {file.name if file else 'None'}")
 
         # Gửi request tới Flask API
-        try:
-            payload = {"query": query}
-            response = requests.post(API_URL, json=payload)
-            response.raise_for_status()
-            data = response.json()
+   
+        payload = {"query": query}
+        response = requests.post(API_URL, json=payload)
+        response.raise_for_status()
+        data = response.json()
+    
+        
+        if data.get("success"):
+            resp = data["response"]
+            # nếu response là list
+            if isinstance(resp, list):
+                frames = resp[0].get("frames", [])
+            # nếu response là dict
+            elif isinstance(resp, dict):
+                frames = resp.get("frames", [])
+            else:
+                st.error("Response format not recognized")
+                return
 
-            if data.get("success"):
-                frames = data["response"][0]["frames"]
-            
-                grouped = group_frames_by_video({"success": True, "response": [{"frames": frames}]})
+            grouped = group_frames_by_video({"success": True, "response": [{"frames": frames}]})
 
+            try:
                 for vid, paths in grouped.items():
-                    with st.expander(f"🎞 Video: {vid} ({len(paths)} frames)"):
+                    with st.expander(f" Video: {vid} ({len(paths)} frames)"):
                         cols = st.columns(3)
                         for i, p in enumerate(paths):
                             img = load_image_from_path(p)
                             if img:
                                 with cols[i % 3]:
                                     st.image(img, caption=os.path.basename(p), use_column_width=True)
-            else:
-                st.error("No results found")
+            except Exception as e:
+                st.error(f"render error: {e}")
+        else:
+            st.error("No results found")
 
-        except Exception as e:
-            st.error(f"API request failed: {e}")
+        
             
 if __name__ == "__main__":
     main()
