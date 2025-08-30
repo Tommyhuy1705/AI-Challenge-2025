@@ -4,7 +4,7 @@ import requests
 from collections import defaultdict
 import os
 from PIL import Image
-
+import json
 API_URL = "http://127.0.0.1:5000/api/search"
 
 
@@ -77,6 +77,20 @@ def load_image_from_path(path: str):
         print(f"Lỗi khi load ảnh {path}: {e}")
         return None
 
+def fetch_saved_searches(api_url, payload=None, headers=None, save_path="response.json"):
+    try:
+        response = requests.post(api_url, json=payload, headers=headers) if payload else requests.get(api_url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+
+        with open(save_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+        print(f"JSON saved to {os.path.abspath(save_path)}")
+        return data
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 def main():
     st.title("Search for Data")
@@ -92,6 +106,7 @@ def main():
         # Gửi request tới Flask API
    
         payload = {"query": query}
+        data = fetch_saved_searches(API_URL, payload=payload, save_path="response.json")
         response = requests.post(API_URL, json=payload)
         response.raise_for_status()
         data = response.json()
