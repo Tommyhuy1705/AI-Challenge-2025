@@ -11,19 +11,18 @@ API_URL = "http://127.0.0.1:5000/api/search"
 def render_search_form():
     """Render thanh nhập query."""
     with st.form("search_form"):
-        col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
+        col1, col2, col3,= st.columns([2, 2, 2])
         query = col1.text_input("Enter your query")
         optional = col2.text_input("Optional query")
-        sql_filter = col3.text_input("Optional SQL filter (video_name, frame_id)")
-        limit = col4.number_input("Limit", value=100, min_value=1, step=1)
+        limit = col3.number_input("Limit", value=100, min_value=1, step=1)
 
         file = st.file_uploader("Image query or Text file query", type=["jpg", "png", "txt", "zip"])
 
         submitted = st.form_submit_button("Search")
 
         if submitted:
-            return query, optional, sql_filter, limit, file
-    return None, None, None, None, None
+            return query, optional, limit, file
+    return None, None, None, None
 
 
 def render_image_card(keyframe_id: str, keyframe_path: str):
@@ -83,10 +82,10 @@ def main():
     if st.button("Session Data Clear"):
         st.session_state.clear()
 
-    query, optional, sql_filter, limit, file = render_search_form()
+    query, optional, limit, file = render_search_form()
 
     if query:
-        st.write(f"Query 1: {query}, Query 2: {optional}, SQL Filter: {sql_filter if sql_filter else 'None'}")
+        st.write(f"Query 1: {query}, Query 2: {optional}, Limit: {limit}, File: {file.name if file else 'None'}")
 
         # Gửi request tới Flask API
         try:
@@ -97,11 +96,9 @@ def main():
 
             if data.get("success"):
                 frames = data["response"][0]["frames"]
-
-                # 🔹 Gom frames theo video
+            
                 grouped = group_frames_by_video({"success": True, "response": [{"frames": frames}]})
 
-                # 🔹 Hiển thị ảnh theo video
                 for vid, paths in grouped.items():
                     with st.expander(f"🎞 Video: {vid} ({len(paths)} frames)"):
                         cols = st.columns(3)
