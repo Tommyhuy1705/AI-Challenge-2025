@@ -1,5 +1,4 @@
 import os
-import math
 from core.boostrap import ModelRegistry
 from core.db_controller.crud import get_all_frames_by_vector
 from core.db_controller.connect import connect_db
@@ -9,28 +8,33 @@ def _extract_id_path(obj):
     props = getattr(obj, "properties", {}) or {}
     return props.get("keyframeId"), props.get("keyframePath")
 
-def _score_from_obj(obj):
+def _normalize_score(meta: dict, fallback_rank: int) -> float:
     """
-    Cố gắng lấy điểm tương tự nếu có (distance/certainty/score).
-    Trả về None nếu không có.
+    Chuẩn hoá điểm về [0,1].
+    Nếu không có similarity thì fallback = 1/(1+rank).
     """
-    # Nhiều client để trong obj.metadata / obj.additional
-    meta = getattr(obj, "metadata", None) or getattr(obj, "additional", None) or {}
-    # Ưu tiên 'certainty' (cao hơn là tốt) rồi tới -distance (thấp hơn là tốt)
-    if isinstance(meta, dict):
-        if "certainty" in meta and isinstance(meta["certainty"], (int, float)):
-            return float(meta["certainty"])  # lớn hơn tốt hơn
-        if "distance" in meta and isinstance(meta["distance"], (int, float)):
-            # distance nhỏ hơn tốt hơn → đảo dấu để lớn hơn là tốt hơn
-            return -float(meta["distance"])
-        if "score" in meta and isinstance(meta["score"], (int, float)):
-            return float(meta["score"])
-    return None
+    if not isinstance(meta, dict):
+        return 1.0 / (1.0 + fallback_rank)
 
-def search(keyword: list[str], limit: int = 5) -> dict:
+    if "certainty" in meta and isinstance(meta["certainty"], (int, float)):
+        c = float(meta["certainty"])
+        return max(0.0, min(1.0, c))
+
+    if "distance" in meta and isinstance(meta["distance"], (int, float)):
+        d = max(0.0, float(meta["distance"]))
+        return 1.0 / (1.0 + d)
+
+    if "score" in meta and isinstance(meta["score"], (int, float)):
+        s = float(meta["score"])
+        # giả sử cosine [-1,1] → đưa về [0,1]
+        return max(0.0, min(1.0, (s + 1.0) / 2.0))
+
+    return 1.0 / (1.0 + fallback_rank)
+
+def search(keyword: list[str], limit: int = 5, alpha_main: float = 0.25) -> dict:
     """
-    Approach #3: Search theo keyword chính (keyword[0]) → rerank bằng các keyword phụ.
-    Không intersect cứng, tránh rỗng vì động từ/trạng thái.
+    Search theo keyword chính (keyword[0]) → rerank bằng các keyword phụ.
+    - Điểm được pha trộn: rerank_score = α * main_score + (1-α) * mean(secondary_scores)
     """
     clip_model = ModelRegistry.clip_model
     if not clip_model:
@@ -39,7 +43,6 @@ def search(keyword: list[str], limit: int = 5) -> dict:
     if not keyword:
         raise ValueError("keyword must not be empty")
 
-    # Encode text → đa số implementation OK với string/list string
     keyw_vectors = [clip_model.encode_text(k) for k in keyword]
 
     # Connect
@@ -48,39 +51,39 @@ def search(keyword: list[str], limit: int = 5) -> dict:
     client = connect_db(url, key)
 
     try:
-        init_limit = max(limit * 20, 50)  # rộng hơn để rerank có ý nghĩa
+        init_limit = max(limit * 20, 50)
 
         # 1) Query MAIN
         main_keyword, main_vec = keyword[0], keyw_vectors[0]
         main_res = get_all_frames_by_vector(client, vector=main_vec, limit=init_limit)
 
         main_frames = []
+        main_score_map = {}
         for rank, obj in enumerate(getattr(main_res, "objects", []) or []):
             fid, fpath = _extract_id_path(obj)
             if not fid:
                 continue
+            score = _normalize_score(
+                getattr(obj, "metadata", None) or getattr(obj, "additional", None) or {},
+                rank
+            )
+            main_score_map[fid] = score
             main_frames.append({
                 "keyframeId": fid,
                 "keyframePath": fpath,
-                "main_rank": rank  # tie-break sau khi rerank
+                "main_rank": rank
             })
 
         if not main_frames:
-            # Không có gì cho keyword chính thì trả rỗng sớm
             return {
                 "main_keyword": main_keyword,
                 "rerank_keywords": keyword[1:],
                 "frames": []
             }
 
-        # 2) Chuẩn bị map để rerank từ các keyword phụ:
-        #    Với mỗi keyword phụ: query riêng → tạo map {keyframeId: score}
-        secondary_keywords = keyword[1:]
-        secondary_vecs = keyw_vectors[1:]
-
-        # Danh sách dict score_map theo từng keyword phụ
+        # 2) Query phụ và tạo score_map
         secondary_score_maps = []
-        for sub_vec in secondary_vecs:
+        for sub_idx, sub_vec in enumerate(keyw_vectors[1:]):
             sub_res = get_all_frames_by_vector(client, vector=sub_vec, limit=init_limit)
             score_map = {}
             objs = getattr(sub_res, "objects", []) or []
@@ -88,32 +91,26 @@ def search(keyword: list[str], limit: int = 5) -> dict:
                 fid, _ = _extract_id_path(obj)
                 if not fid:
                     continue
-                s = _score_from_obj(obj)
-                if s is None:
-                    # fallback nếu DB không trả similarity: dùng inverse-rank
-                    s = 1.0 / (1.0 + idx)
-                score_map[fid] = float(s)
+                score = _normalize_score(
+                    getattr(obj, "metadata", None) or getattr(obj, "additional", None) or {},
+                    idx
+                )
+                score_map[fid] = score
             secondary_score_maps.append(score_map)
 
-        # 3) Tính điểm rerank cho từng frame trong main_frames
-        #    - aggregate = trung bình (hoặc tổng) điểm các map phụ
-        #    - nếu frame không xuất hiện trong một sub-map → điểm 0 cho keyword đó
+        # 3) Pha trộn điểm: main_score (α) + mean phụ (1-α)
         for f in main_frames:
             fid = f["keyframeId"]
+            main_s = main_score_map.get(fid, 0.0)
             if secondary_score_maps:
-                scores = []
-                for smap in secondary_score_maps:
-                    scores.append(smap.get(fid, 0.0))
-                # dùng mean để tránh thiên lệch
-                agg = sum(scores) / len(scores)
+                sec_scores = [smap.get(fid, 0.0) for smap in secondary_score_maps]
+                sec_mean = sum(sec_scores) / len(secondary_score_maps)
             else:
-                agg = 0.0
-            f["rerank_score"] = float(agg)
+                sec_mean = 0.0
+            f["rerank_score"] = alpha_main * main_s + (1 - alpha_main) * sec_mean
 
-        # 4) Sort: ưu tiên rerank_score desc, tie-break bằng main_rank asc
+        # 4) Sort & cắt top-k
         main_frames.sort(key=lambda x: (-x["rerank_score"], x["main_rank"]))
-
-        # 5) Cắt top-k
         top_frames = [
             {"keyframeId": f["keyframeId"], "keyframePath": f["keyframePath"]}
             for f in main_frames[:limit]
@@ -121,7 +118,7 @@ def search(keyword: list[str], limit: int = 5) -> dict:
 
         return {
             "main_keyword": main_keyword,
-            "rerank_keywords": secondary_keywords,
+            "rerank_keywords": keyword[1:],
             "frames": top_frames
         }
 
