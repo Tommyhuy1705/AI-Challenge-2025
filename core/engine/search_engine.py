@@ -34,7 +34,7 @@ def _normalize_score(meta: dict, fallback_rank: int) -> float:
     return 1.0 / (1.0 + fallback_rank)
 
 
-def search(keyword: list[str], limit: int = 5, alpha_main: float = 0.25) -> dict:
+def search(keyword: list[str], limit: int = 20, alpha_main: float = 0.25) -> dict:
     """
     Search theo keyword chính (keyword[0]) → rerank bằng các keyword phụ.
     - Điểm được pha trộn: rerank_score = α * main_score + (1-α) * mean(secondary_scores)

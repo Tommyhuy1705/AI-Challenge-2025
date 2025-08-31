@@ -7,7 +7,7 @@ from core.engine.search_engine import search
 
 def call_api(user_query: str):
     load_dotenv()
-    hf_token = os.getenv("HF_SECRET")
+    hf_token = os.getenv("HF_token")
 
     client = OpenAI(
     base_url="https://router.huggingface.co/v1",
