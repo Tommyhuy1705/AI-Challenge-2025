@@ -28,30 +28,27 @@ def search_in_video(client, video_id: str, vector, min_index: int = 0, limit: in
     return frames
 
 
-def find_flow(state: list[str], limit: int = 150, top_k: int = 100):
+def find_flow(state: list[str], limit: int = 10, top_k: int = 20):
     clip_model = ModelRegistry.clip_model
     if not clip_model:
         raise ValueError("CLIP model is not loaded")
 
-    # encode vector cho từng state
     state_vectors = [clip_model.encode_text(s) for s in state]
 
     url = os.getenv("WEAVIATE_URL")
     key = os.getenv("WEAVIATE_API_KEY")
     client = connect_db(url, key)
 
-    # Step 1: search anchor cho state[0]
     anchor_frames = get_all_frames_by_vector(client, state_vectors[0], limit=limit)
 
-    frames_result = []   # list frame flow hợp lệ
-    combos = []          # để build combo như trước
+    flows = []
+    combos = []
 
     for obj in anchor_frames.objects:
         props0 = obj.properties
         frame_id = props0.get("keyframeId")
         frame_path = props0.get("keyframePath")
 
-        # enrich từ frameId
         info0 = get_info_by_frameId(client, frame_id)
         if not info0.objects:
             continue
@@ -62,18 +59,16 @@ def find_flow(state: list[str], limit: int = 150, top_k: int = 100):
         if not vid or idx0 is None:
             continue
 
-        current_frames = [{
-            "keyframeId": frame_id,
-            "keyframePath": frame_path,
-            "videoId": vid,
-            "frameIndex": idx0,
+        # flow_result sẽ chứa frames cho từng state
+        flow_result = [{
+            "frames": [{"keyframeId": frame_id, "keyframePath": frame_path}],
+            "state": state[0]
         }]
 
         last_index = idx0
         valid_flow = True
 
-        # Step 2: sequential cho state tiếp theo
-        for s, vec in zip(state[1:], state_vectors[1:]):
+        for i, (s, vec) in enumerate(zip(state[1:], state_vectors[1:]), start=1):
             candidates = search_in_video(client, video_id=vid, vector=vec, min_index=last_index + 1, limit=limit)
             if not candidates:
                 valid_flow = False
@@ -89,34 +84,25 @@ def find_flow(state: list[str], limit: int = 150, top_k: int = 100):
                 break
 
             info_props = info.objects[0].properties
-            current_frames.append({
-                "keyframeId": frame_id,
-                "keyframePath": frame_path,
-                "videoId": info_props.get("videoId"),
-                "frameIndex": info_props.get("frameIndex"),
-            })
             last_index = info_props.get("frameIndex")
 
-        if valid_flow:
-            frame_indices = [f["frameIndex"] for f in current_frames]
-            diffs = [frame_indices[i+1] - frame_indices[i] for i in range(len(frame_indices)-1)]
-            score = sum(diffs)
+            flow_result.append({
+                "frames": [{"keyframeId": frame_id, "keyframePath": frame_path}],
+                "state": s
+            })
 
-            # lưu cho combo
-            combos.append((vid, frame_indices, score))
+        if valid_flow and len(flow_result) == len(state):
+            flows.append(flow_result)
 
-            # lưu cho frames
-            frames_result.append(current_frames)
+            # combo = list keyframeId
+            frame_ids = [frame["frames"][0]["keyframeId"] for frame in flow_result]
+            combos.append((vid, frame_ids, len(frame_ids)))
 
     client.close()
 
-    # sort combo
-    combos = sorted(combos, key=lambda x: x[2])[:top_k]
-    combo_strs = [f"{vid}, {','.join(map(str, idxs))}" for vid, idxs, _ in combos]
-
-    return {
-        "combo": combo_strs,
-        "frames": frames_result
-        
-    }
+    # sort và build combo string từ keyframeId
+    combos = sorted(combos, key=lambda x: x[2], reverse=True)[:top_k]
+    combo_strs = [f"{vid}, {','.join(frame_ids)}" for vid, frame_ids, _ in combos]
+    flow_result.append({"combo": combo_strs})
+    return flow_result
 
