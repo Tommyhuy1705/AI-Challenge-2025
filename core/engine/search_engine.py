@@ -6,7 +6,7 @@ from core.db_controller.connect import connect_db
 def _extract_id_path(obj):
     """Lấy keyframeId, keyframePath từ object Weaviate."""
     props = getattr(obj, "properties", {}) or {}
-    return props.get("keyframeId"), props.get("keyframePath")
+    return props.get("keyframeId"), props.get("keyframePath"), props.get("frameIndex")
 
 def _normalize_score(meta: dict, fallback_rank: int) -> float:
     """
@@ -60,7 +60,7 @@ def search(keyword: list[str], limit: int = 5, alpha_main: float = 0.25) -> dict
         main_frames = []
         main_score_map = {}
         for rank, obj in enumerate(getattr(main_res, "objects", []) or []):
-            fid, fpath = _extract_id_path(obj)
+            fid, fpath, findex = _extract_id_path(obj)
             if not fid:
                 continue
             score = _normalize_score(
@@ -70,6 +70,7 @@ def search(keyword: list[str], limit: int = 5, alpha_main: float = 0.25) -> dict
             main_score_map[fid] = score
             main_frames.append({
                 "keyframeId": fid,
+                "keyframeIndex": findex,
                 "keyframePath": fpath,
                 "main_rank": rank
             })
