@@ -28,95 +28,149 @@ def search_in_video(client, video_id: str, vector, min_index: int = 0, limit: in
     return frames
 
 
-def find_flow(state: list[str], limit: int = 150, top_k: int = 100):
+from collections import defaultdict
+import itertools
+import os
+
+def find_flow(state: list[str], limit: int = 50, top_k: int = 100, per_video_keep: int = 10):
+    """
+
+    """
+
     clip_model = ModelRegistry.clip_model
     if not clip_model:
         raise ValueError("CLIP model is not loaded")
 
-    # encode vector cho từng state
     state_vectors = [clip_model.encode_text(s) for s in state]
 
+    # 2) Kết nối
     url = os.getenv("WEAVIATE_URL")
     key = os.getenv("WEAVIATE_API_KEY")
     client = connect_db(url, key)
 
-    # Step 1: search anchor cho state[0]
-    anchor_frames = get_all_frames_by_vector(client, state_vectors[0], limit=limit)
+    # ---------- PHẦN A: XÂY "response" THEO ĐÚNG FORMAT FLASH, GOM THEO VIDEO ----------
+    response_result = []
+    # Cho từng state, lấy top frames, enrich videoId + frameIndex rồi group-by video
+    for s, vec in zip(state, state_vectors):
+        raw = get_all_frames_by_vector(client, vec, limit=limit)
 
-    frames_result = []   # list frame flow hợp lệ
-    combos = []          # để build combo như trước
+        # group theo videoId
+        groups = defaultdict(list)  # vid -> list of (frameIndex, {"keyframeId","keyframePath"})
+        for obj in raw.objects:
+            props = obj.properties
+            kf_id  = props.get("keyframeId")
+            kf_path= props.get("keyframePath")
+
+            info = get_info_by_frameId(client, kf_id)
+            if not info.objects:
+                continue
+            ip = info.objects[0].properties
+            vid = ip.get("videoId")
+            fidx = ip.get("frameIndex")
+            if not vid or fidx is None:
+                continue
+
+            groups[vid].append((fidx, {"keyframeId": kf_id, "keyframePath": kf_path}))
+
+        # với mỗi video, sort theo frameIndex và giữ tối đa per_video_keep frame
+        for vid, items in groups.items():
+            items.sort(key=lambda x: x[0])  # theo frameIndex tăng dần
+            frames_for_state = [d for _, d in items[:per_video_keep]]
+
+            if frames_for_state:
+                response_result.append({
+                    "frames": frames_for_state,
+                    "state": s
+                })
+
+    # ---------- PHẦN B: XÂY "combo" THEO CHUỖI FLOW CÙNG VIDEO ----------
+    combos = []
+    seen_combo = set()
+
+    # Anchor từ state[0]
+    anchor_frames = get_all_frames_by_vector(client, state_vectors[0], limit=limit)
 
     for obj in anchor_frames.objects:
         props0 = obj.properties
-        frame_id = props0.get("keyframeId")
-        frame_path = props0.get("keyframePath")
+        kf0_id = props0.get("keyframeId")
+        kf0_path = props0.get("keyframePath")
 
-        # enrich từ frameId
-        info0 = get_info_by_frameId(client, frame_id)
+        info0 = get_info_by_frameId(client, kf0_id)
         if not info0.objects:
             continue
-
-        info_props0 = info0.objects[0].properties
-        vid = info_props0.get("videoId")
-        idx0 = info_props0.get("frameIndex")
+        ip0 = info0.objects[0].properties
+        vid = ip0.get("videoId")
+        idx0 = ip0.get("frameIndex")
         if not vid or idx0 is None:
             continue
 
-        current_frames = [{
-            "keyframeId": frame_id,
-            "keyframePath": frame_path,
-            "videoId": vid,
-            "frameIndex": idx0,
-        }]
-
+        flow_ids = [kf0_id]
         last_index = idx0
-        valid_flow = True
+        ok = True
+        idx_list = [idx0]
 
-        # Step 2: sequential cho state tiếp theo
-        for s, vec in zip(state[1:], state_vectors[1:]):
-            candidates = search_in_video(client, video_id=vid, vector=vec, min_index=last_index + 1, limit=limit)
-            if not candidates:
-                valid_flow = False
+        # Duyệt các state tiếp theo trong CÙNG video
+        for vec in state_vectors[1:]:
+            # chỉ lấy frame sau last_index trong video đó
+            cands = search_in_video(client, video_id=vid, vector=vec, min_index=last_index + 1, limit=limit)
+            if not cands:
+                ok = False
                 break
 
-            best = candidates[0]
-            frame_id = best["keyframeId"]
-            frame_path = best["keyframePath"]
+            # chọn best đầu tiên
+            best = cands[0]
+            kf_id = best["keyframeId"]
 
-            info = get_info_by_frameId(client, frame_id)
+            info = get_info_by_frameId(client, kf_id)
             if not info.objects:
-                valid_flow = False
+                ok = False
+                break
+            ip = info.objects[0].properties
+            fidx = ip.get("frameIndex")
+            if fidx is None:
+                ok = False
                 break
 
-            info_props = info.objects[0].properties
-            current_frames.append({
-                "keyframeId": frame_id,
-                "keyframePath": frame_path,
-                "videoId": info_props.get("videoId"),
-                "frameIndex": info_props.get("frameIndex"),
-            })
-            last_index = info_props.get("frameIndex")
+            flow_ids.append(kf_id)
+            idx_list.append(fidx)
+            last_index = fidx
 
-        if valid_flow:
-            frame_indices = [f["frameIndex"] for f in current_frames]
-            diffs = [frame_indices[i+1] - frame_indices[i] for i in range(len(frame_indices)-1)]
-            score = sum(diffs)
+        if not ok:
+            continue
 
-            # lưu cho combo
-            combos.append((vid, frame_indices, score))
+        # Tính score (độ liền mạch theo index), nhỏ hơn = tốt hơn
+        diffs = [idx_list[i+1] - idx_list[i] for i in range(len(idx_list)-1)]
+        if any(d <= 0 for d in diffs):  # đảm bảo tăng dần
+            continue
+        score = sum(diffs)
 
-            # lưu cho frames
-            frames_result.append(current_frames)
+        key = (vid, tuple(flow_ids))
+        if key in seen_combo:
+            continue
+        seen_combo.add(key)
+        combos.append((score, vid, flow_ids))
 
     client.close()
 
-    # sort combo
-    combos = sorted(combos, key=lambda x: x[2])[:top_k]
-    combo_strs = [f"{vid}, {','.join(map(str, idxs))}" for vid, idxs, _ in combos]
+    # sort theo score tăng dần (càng liền mạch càng tốt), cắt top_k
+    combos.sort(key=lambda x: x[0])
+    combos = combos[:top_k]
+
+    combo_strs = []
+    for _, vid, flow_ids in combos:
+        indices = []
+        for kf_id in flow_ids:
+            info = get_info_by_frameId(client, kf_id)
+            if info.objects:
+                idx = info.objects[0].properties.get("frameIndex")
+                if idx is not None:
+                    indices.append(str(idx))
+        combo_strs.append(f"{vid}, {','.join(indices)}")
 
     return {
+        "info": response_result,
         "combo": combo_strs,
-        "frames": frames_result
-        
+        "success": True
     }
+
 
